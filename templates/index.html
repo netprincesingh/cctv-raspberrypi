@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCTV Web Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            text-align: center;
+        }
+        h1 {
+            color: #007BFF;
+            margin-top: 20px;
+        }
+        h2 {
+            color: #28a745;
+            margin-top: 30px;
+        }
+        #video-feed {
+            margin-top: 20px;
+            border: 3px solid #007BFF;
+            max-width: 100%;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin: 10px;
+        }
+        a {
+            text-decoration: none;
+            color: #007BFF;
+            font-weight: bold;
+        }
+        a:hover {
+            color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Live CCTV Feed</h1>
+    <img id="video-feed" src="{{ url_for('video_feed') }}" width="640" height="480" />
+
+    <h2>Recorded Videos</h2>
+    <ul id="video-list"></ul>
+
+    <script>
+        // Fetch the list of videos from the Flask backend
+        fetch('/list_videos')
+            .then(response => response.json())
+            .then(data => {
+                const videoList = document.getElementById('video-list');
+                data.files.forEach(file => {
+                    const li = document.createElement('li');
+                    const link = document.createElement('a');
+                    link.href = '/videos/' + file;
+                    link.textContent = file;
+                    li.appendChild(link);
+                    videoList.appendChild(li);
+                });
+            });
+    </script>
+</body>
+</html>
