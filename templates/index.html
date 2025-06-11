@@ -24,12 +24,25 @@
             border: 3px solid #007BFF;
             max-width: 100%;
         }
-        ul {
-            list-style-type: none;
-            padding: 0;
+        .video-list {
+            width: 80%;
+            margin: 0 auto;
+            border-collapse: collapse;
         }
-        li {
-            margin: 10px;
+        .video-list th, .video-list td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        .video-list th {
+            background-color: #007BFF;
+            color: white;
+        }
+        .video-list tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .video-list tr:hover {
+            background-color: #e9e9e9;
         }
         a {
             text-decoration: none;
@@ -39,14 +52,54 @@
         a:hover {
             color: #0056b3;
         }
+        .user-info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+        .video-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
+    <div class="user-info">
+        Welcome, {{ username }}! <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+    </div>
+    
     <h1>Live CCTV Feed</h1>
-    <img id="video-feed" src="{{ url_for('video_feed') }}" width="640" height="480" />
+    <div class="video-container">
+        <img id="video-feed" src="{{ url_for('video_feed') }}" width="640" height="480" />
+    </div>
 
     <h2>Recorded Videos</h2>
-    <ul id="video-list"></ul>
+    <table class="video-list">
+        <thead>
+            <tr>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Duration</th>
+                <th>Download</th>
+            </tr>
+        </thead>
+        <tbody id="video-list">
+            <!-- Videos will be inserted here by JavaScript -->
+        </tbody>
+    </table>
 
     <script>
         // Fetch the list of videos from the Flask backend
@@ -54,14 +107,40 @@
             .then(response => response.json())
             .then(data => {
                 const videoList = document.getElementById('video-list');
-                data.files.forEach(file => {
-                    const li = document.createElement('li');
+                
+                data.videos.forEach(video => {
+                    const row = document.createElement('tr');
+                    
+                    // Start time cell
+                    const startCell = document.createElement('td');
+                    startCell.textContent = video.start_time;
+                    row.appendChild(startCell);
+                    
+                    // End time cell
+                    const endCell = document.createElement('td');
+                    endCell.textContent = video.end_time;
+                    row.appendChild(endCell);
+                    
+                    // Duration cell
+                    const durationCell = document.createElement('td');
+                    durationCell.textContent = video.duration;
+                    row.appendChild(durationCell);
+                    
+                    // Download link cell
+                    const downloadCell = document.createElement('td');
                     const link = document.createElement('a');
-                    link.href = '/videos/' + file;
-                    link.textContent = file;
-                    li.appendChild(link);
-                    videoList.appendChild(li);
+                    link.href = '/videos/' + video.filename;
+                    link.textContent = 'Download';
+                    downloadCell.appendChild(link);
+                    row.appendChild(downloadCell);
+                    
+                    videoList.appendChild(row);
                 });
+            })
+            .catch(error => {
+                console.error('Error fetching video list:', error);
+                document.getElementById('video-list').innerHTML = 
+                    '<tr><td colspan="4">Error loading video list</td></tr>';
             });
     </script>
 </body>
